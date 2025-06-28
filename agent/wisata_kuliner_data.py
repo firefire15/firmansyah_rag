@@ -2,11 +2,14 @@ import re
 from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+import os
 class WisataKulinerData():
 
     def __init__(self):
-        self.nama_file = r"C:\Users\USER\OneDrive\Documents\Firmansyah_Tugas_Akhir_LLM_RAG\data\wisata_kuliner.txt"
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.file_path = os.path.join(self.base_dir, "data", "wisata_kuliner.txt")
+        self.nama_file = self.file_path
+        print(self.file_path)
         self.collection_name = "wisata_kuliner_collection"
 
     def cleaning_text(self):

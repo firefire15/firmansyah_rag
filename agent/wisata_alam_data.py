@@ -7,11 +7,10 @@ import os
 class WisataAlamData():
 
     def __init__(self):
-        import os
-        base_dir = os.getcwd()  # atau bisa pakai os.path.dirname(__file__)
-        file_path = os.path.join(base_dir, "data", "wisata_alam.txt")
-        print(file_path)
-        self.nama_file = file_path
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.file_path = os.path.join(self.base_dir, "data", "wisata_alam.txt")
+        self.nama_file = self.file_path
+        print(self.file_path)
         self.collection_name = "wisata_alam_collection"
 
     def cleaning_text(self):
