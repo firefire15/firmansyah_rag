@@ -18,8 +18,8 @@ class WisataKulinerAgent():
     def __init__(self):
         self.collection_name = "wisata_kuliner_collection"
         config = dotenv_values(".env")
-        self.gemini_api_key = config.get("GEMINI_API_KEY","AIzaSyCLcqeBq3Q0gIa-frAZI-qrx0_twYOXeq0")
-        self.gemini_model = config.get("MODEL_NAME","gemini-2.5-flash")
+        self.gemini_api_key = config.get("GEMINI_API_KEY")
+        self.gemini_model = config.get("MODEL_NAME")
 
     def augment_prompt(self, query_text, context_string):
         """Augment the query with retrieved documents."""

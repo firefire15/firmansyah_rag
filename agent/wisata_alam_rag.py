@@ -6,8 +6,8 @@ import google.generativeai as genai
 class WisataAlamAgent():
     def __init__(self):
         config = dotenv_values(".env")
-        self.gemini_api_key = config.get("GEMINI_API_KEY","AIzaSyCLcqeBq3Q0gIa-frAZI-qrx0_twYOXeq0")
-        self.gemini_model = config.get("MODEL_NAME","gemini-2.5-flash")
+        self.gemini_api_key = config.get("GEMINI_API_KEY")
+        self.gemini_model = config.get("MODEL_NAME")
 
     def augment_prompt(self, query_text, context_string):
         """Augment the query with retrieved documents."""
@@ -71,5 +71,5 @@ class WisataAlamAgent():
 if __name__ == "__main__":
     waa = WisataAlamAgent()
     query = "Apa saja wisata alam di Kota Bandung yang memiliki kawah aktif?"
-    results = waa.execution(query=query)
+    results = waa.execute(query=query)
     print(results.text)
