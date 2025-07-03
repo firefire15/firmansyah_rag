@@ -21,7 +21,7 @@ class WisataAlamData():
             (?<!\d)\.(?=\s+[A-Z])   
         ''', re.VERBOSE)
         content = pattern.sub('<SP>', content)
-        # Pisahkan berdasarkan token
+
         sentences = [sentence.strip() for sentence in content.split('<SP>') if sentence.strip()]
 
         return sentences

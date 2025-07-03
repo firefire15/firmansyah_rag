@@ -41,8 +41,8 @@ class SearchLocation():
 
             }
         config = dotenv_values(".env")
-        self.gemini_api_key = config.get("GEMINI_API_KEY","AIzaSyCLcqeBq3Q0gIa-frAZI-qrx0_twYOXeq0")
-        self.gemini_model = config.get("MODEL_NAME","gemini-2.5-flash")
+        self.gemini_api_key = config.get("GEMINI_API_KEY")
+        self.gemini_model = config.get("MODEL_NAME")
 
 
     def augment_prompt(self, query_text, options):
@@ -88,8 +88,9 @@ class SearchLocation():
                     jarak = geodesic(point, poi_loc).meters
 
                     # Ambil nama jalan (opsional)
-                    street = row.get("addr:street") or row.get("highway") or row.get("street") or row.get("description") or "Jalan tidak diketahui"
-
+                    street = (row.get("addr:street") or row.get("highway") or row.get("street") or row.get("description")) or "Jalan tidak diketahui"
+                    if street is None or str(street) == 'nan':
+                        street = ""
                     # Gabungkan
                     result.append(f"- {row['name']} ({int(jarak)} m) – {street}")
                 else:
@@ -123,26 +124,29 @@ class SearchLocation():
             #print(dict_result)
             return dict_result
         except Exception:
-            print("error pada modul ini")
+            return f"Tidak ditemukan lokasi awal atau objek yang akan dicari"
     
     def execute(self, query):
-        builder = StateGraph(State)
-        builder.set_entry_point("router")
-        builder.add_node("router", RunnableLambda(self.llm_router))
-        for intent, tags in self.INTENT_TAG_MAP.items():
-            def make_node(tags):
-                return RunnableLambda(lambda s, tags_=tags: {"content": self.search_location(s["query"], s["next"], tags_), "role":"ai", "map":self.create_map(s["query"], s["next"], tags_)})
-            builder.add_node(intent, make_node(tags))
-            builder.add_edge(intent, END)
-        builder.add_node("fallback", RunnableLambda(lambda s: {"content": "Mohon Maaf, saya tidak memiliki informasi atas lokasi tersebut", "role":"ai", "map":object}))
-        builder.add_edge("fallback", END)
-        builder.add_conditional_edges("router", lambda x: x["next"], {
-            **{intent: intent for intent in self.INTENT_TAG_MAP.keys()},
-            "fallback": "fallback"
-            })
-        graph = builder.compile()
-        result = graph.invoke({"query": query, "role":"human", "content":"", "map":object, "next":"Alun alun Bandung"})
-        return result
+        try:
+            builder = StateGraph(State)
+            builder.set_entry_point("router")
+            builder.add_node("router", RunnableLambda(self.llm_router))
+            for intent, tags in self.INTENT_TAG_MAP.items():
+                def make_node(tags):
+                    return RunnableLambda(lambda s, tags_=tags: {"content": self.search_location(s["query"], s["next"], tags_), "role":"ai", "map":self.create_map(s["query"], s["next"], tags_)})
+                builder.add_node(intent, make_node(tags))
+                builder.add_edge(intent, END)
+            builder.add_node("fallback", RunnableLambda(lambda s: {"content": "Mohon Maaf, saya tidak memiliki informasi atas lokasi tersebut", "role":"ai", "map":object}))
+            builder.add_edge("fallback", END)
+            builder.add_conditional_edges("router", lambda x: x["next"], {
+                **{intent: intent for intent in self.INTENT_TAG_MAP.keys()},
+                "fallback": "fallback"
+                })
+            graph = builder.compile()
+            result = graph.invoke({"query": query, "role":"human", "content":"", "map":object, "next":"Alun alun Bandung"})
+            return result
+        except Exception:
+            return f"Tidak ditemukan lokasi awal atau objek yang akan dicari"
     
     def create_map(self, nama_tempat, object_,  tags_, radius= 1500, limit=10):
         try: 
@@ -172,7 +176,7 @@ class SearchLocation():
             point_data = {'point':point, "pois":pois_data}
             return point_data
         except:
-            return ""
+            return f"Tidak ditemukan lokasi awal atau objek yang akan dicari"
     
 class State(TypedDict):
     query: str

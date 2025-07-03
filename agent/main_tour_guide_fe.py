@@ -53,10 +53,11 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
         if msg['role'] == 'assistant' and msg['map_response']['map_status'] == 1:
             map_data =  msg['map_response']['map_data']
-            maps = create_map_folium(map_data["query"], map_data["map"])
-            if maps:
-               # with st.expander("Lihat Peta Hasil Pencarian"):
-                st_maps =  st_folium(maps, width=725, height=500, key="key_map_hist_{}".format(id_maps_hist))
+            if "query" in map_data and "map" in map_data:
+                maps = create_map_folium(map_data["query"], map_data["map"])
+                if maps:
+                # with st.expander("Lihat Peta Hasil Pencarian"):
+                    st_maps =  st_folium(maps, width=725, height=500, key="key_map_hist_{}".format(id_maps_hist))
     id_maps_hist += 1 
 
 prompt = st.chat_input("Tulis pertanyaanmu...")
@@ -74,14 +75,15 @@ if prompt:
             map_data = (response_message['location'][0].additional_kwargs)
             map_response["map_data"] = map_data
             map_response["map_status"] = 1
-            maps = create_map_folium(map_data['query'], map_data['map'])
-            if maps:
-                #with st.expander("Lihat Peta Hasil Pencarian"):
-                st_maps = st_folium(maps, width=725, height=500, key="key_map_{}".format(st.session_state.id_maps))
-                st.session_state.id_maps += 1
-                st.success("Berhasil membuat peta dari data.")
+            if "query" in map_data and "map" in map_data:
+                maps = create_map_folium(map_data['query'], map_data['map'])
+                if maps:
+                    #with st.expander("Lihat Peta Hasil Pencarian"):
+                    st_maps = st_folium(maps, width=725, height=500, key="key_map_{}".format(st.session_state.id_maps))
+                    st.session_state.id_maps += 1
+                    st.success("Berhasil membuat peta dari data.")
             else:
-                st.warning("Gagal membuat peta dari data.")
+                map_response["map_status"] = 0
     
     messages_hist = {"_id": st.session_state.id_message, "role": "assistant", "content": response, "map_response":map_response}
     print("messages_hist", messages_hist)
